@@ -8,13 +8,14 @@
 	local cfg = ns.cfg 
 	local tags = ns.tags
 	local Colors = ns.Colors
-	local powerType = UnitPowerType("Unit")
+	local color = PowerBarColor[powerType]
+	local powerType = UnitPowerType("player")
 	local color = oUF.colors.power[powerType]
 	local _, playerClass = UnitClass("player")
-	
 
-
+ns.headers = {}
 ------------------------------------------------------------------------
+
 -- Configurable stuff starts here
 local BUFF_HEIGHT = 17
 local BUFF_SPACING = 0.2
@@ -167,7 +168,6 @@ end
 
 
 
-
 local function Portrait_PostUpdate(portrait, unit)
 	portrait:SetCamera(0)
 end
@@ -234,7 +234,7 @@ local function Style(frame, unit, isSingle)
 	end
 	healthText:SetTextColor(1, 1, 1, 1)
 	healthText:SetFont(cfg.font, cfg.fontsize, cfg.fontflag)
-	frame:Tag(healthText, "[status][raidcolor][shorthp] / [perhp]")
+	frame:Tag(healthText, "[status][raidcolor][shorthp]/[perhp]")
 	
 
 	frame.Health = health
@@ -264,11 +264,11 @@ local function Style(frame, unit, isSingle)
 	elseif unit == "target" then
 	powerText:SetPoint("LEFT", health, "LEFT", 5, 0)	
 	end
-	powerText:SetFont(cfg.font, cfg.fontsize, cfg.fontflag)
-	powerText:SetTextColor(powerType["Unit"])
 
+	powerText:SetFont(cfg.font, cfg.fontsize, cfg.fontflag)
+	powerText:SetTextColor(powerType)
+	
 	frame:Tag(powerText, "[shortpp]")
-	-- powerText.UnitPowerType = true		
 	power.colorPower = true	
 	frame.Power = power
 	
@@ -295,7 +295,7 @@ local function Style(frame, unit, isSingle)
 	---------------------------------
 	if unit == "target" then
 	local level = health:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-	level:SetPoint("LEFT", frame, 100, 0)
+	level:SetPoint("LEFT", frame, 70, 0)
 	level:SetFont(cfg.font, cfg.fontsize, cfg.fontflag)
 	level:SetTextColor(1, 1, 1, 1)
 	frame:Tag(level, "[smartlevel][shortclassification]")
@@ -383,28 +383,7 @@ local function Style(frame, unit, isSingle)
 	--	Aurabars	--
 	------------------
 	AddAuraElement(frame, unit, isSingle)
-	--[[
-	-- Dont change any values
-	local auraElementForUnit = auraElement[unit]
-	if auraElementForUnit then
-		local Auras = CreateFrame("Frame", nil, frame)
-		Auras:SetPoint("BOTTOMLEFT", frame, "TOPLEFT", 0, 0)
-		Auras:SetWidth(BUFF_HEIGHT + BUFF_SPACING)
-		Auras:SetHeight(1)
-		
-		Auras["initialAnchor"] = "BOTTOMLEFT"
-		Auras["growth-y"] = "UP"
-		Auras["spacing-y"] = BUFF_SPACING
-		Auras["num"] = MAX_NUM_BUFFS
-		Auras["size"] = BUFF_HEIGHT
-				
-		Auras.PostCreateIcon = auras_PostCreateIcon
-		Auras.PostUpdateIcon = auras_PostUpdateIcon
- 
-		Auras.CustomFilter = auraFilter[unit]
-		frame[auraElementForUnit] = Auras
-	end
-	--]]
+
 	---------------------------------	
 	--		  Combo Points		   --
 	---------------------------------
@@ -554,6 +533,47 @@ local function Style(frame, unit, isSingle)
 	end
 	
 	---------------------
+	--		Castbar	   --
+	---------------------
+	-- Temp castbar..
+	if unit == "player" then
+	local Castbar = CreateFrame("StatusBar", nil, frame)
+	Castbar:SetSize(303, 50)
+	Castbar:SetPoint("BOTTOM", frame, 0, -50)
+	
+	local CastbarBG = Castbar:CreateTexture(nil, "BACKGROUND")
+	CastbarBG:SetAllPoints(Castbar)
+	CastbarBG:SetTexture(cfg.texture)
+
+	local CastbarSpellText = Castbar:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+	CastbarSpellText:SetPoint("LEFT", Castbar)
+	CastbarSpellText:SetFont(cfg.font, cfg.fontsize, cfg.fontflag)
+	
+	local CastbarSpark = Castbar:CreateTexture(nil, "OVERLAY")
+	CastbarSpark:SetSize(20, 20)
+	CastbarSpark:SetBlendMode("ADD")
+	
+	local CastbarTimer = Castbar:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+	CastbarTimer:SetPoint("RIGHT", Castbar)
+	CastbarTimer:SetFont(cfg.font, cfg.fontsize, cfg.fontflag)
+	
+	local CastbarSafeZone = Castbar:CreateTexture(nil, "OVERLAY")
+
+	
+	-- Castbar colors
+	Castbar:SetStatusBarTexture(cfg.texture)
+	Castbar:SetStatusBarColor(79/255, 79/255, 79/255) -- R G B Foreground color
+	CastbarBG:SetVertexColor(150/255, 150/255, 150/255)
+	
+	frame.Castbar = Castbar
+	frame.Castbar.bg = CastbarBG
+	frame.Castbar.Text = CastbarSpellText
+	frame.Castbar.Spark = CastbarSpark
+	frame.Castbar.Time = CastbarTimer
+	frame.Castbar.SafeZone = CastbarSafeZone
+	end
+	
+	---------------------
 	--   Plug-in's     --
 	---------------------
 	---------------------
@@ -655,10 +675,17 @@ local boss5 = oUF:Spawn("boss5")
 boss5:SetPoint("CENTER", player, "CENTER", 0, 210)
 --]]
 
-local party1 = oUF:Spawn("party1")
+	for  unit, object in pairs(ns.headers) do
+		local udata = uconfig[unit]
+		local p1, parent, p2, x, y = string.split(" ", udata.point)
+		object:ClearAllPoints()
+		object:SetPoint(p1, ns.headers[parent] or ns.frames[parent] or _G[parent] or UIParent, p2, tonumber(x) or 0, tonumber(y) or 0)
+	end
+local party1 = oUF:Spawn("party")
 party1:SetPoint("LEFT", UIParent, "LEFT", 54, 0)
 party1:SetScale(0.8)
 
+--[[
 local party2 = oUF:Spawn("party2")
 party2:SetPoint("LEFT", UIParent, "LEFT", 54, 110)
 party2:SetScale(0.8)
@@ -670,3 +697,4 @@ party3:SetScale(0.8)
 local party4 = oUF:Spawn("party4")
 party4:SetPoint("LEFT", UIParent, "LEFT", 54, 330)
 party4:SetScale(0.8)
+--]]
