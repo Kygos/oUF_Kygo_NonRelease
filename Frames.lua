@@ -8,7 +8,6 @@
 	local cfg = ns.cfg 
 	local tags = ns.tags
 	local Colors = ns.Colors
-	local color = PowerBarColor[powerType]
 	local powerType = UnitPowerType("player")
 	local color = oUF.colors.power[powerType]
 	local _, playerClass = UnitClass("player")
