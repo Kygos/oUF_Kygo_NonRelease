@@ -1,0 +1,18 @@
+## Interface: 60000
+## Version: 1.2
+
+## Title: oUF_Kygo
+## Notes: PvE orientated Unit frames based on oUF unit frames.
+## Author: Kygo
+## Dependencies: oUF
+
+## OptionalDependencies: oUF_SVengeance, oUF_Smooth, oUF_AuraBars, oUF_SpellRange
+
+cfg.lua
+
+elements\tags.lua
+elements\Colors.lua
+elements\BurningEmbers.lua
+
+
+Frames.lua
